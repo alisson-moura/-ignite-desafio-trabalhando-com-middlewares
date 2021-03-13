@@ -11,18 +11,57 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   // Complete aqui
+  const { username } = request.headers
+  const user = users.find(user => user.username === username)
+
+  if (!user) return response.status(404).json({ error: 'Usuário não encontrado!' })
+
+  request.user = user;
+  next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
+  const { user } = request
+
+  if (user.pro == false && user.todos.length >= 10)
+    return response.status(403).json({ error: 'Você atingiu o seu limite de todos gratuitos!' })
+
+  next()
 }
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
+  const { username } = request.headers
+  const { id } = request.params
+
+  const user = users.find(user => user.username === username)
+  if (!user) return response.status(404).json({ error: 'Usuário não encontrado!' })
+
+  const validateId = validate(id);
+  if (!validateId) return response.status(400).json({ error: 'Id inválido!' })
+
+  const todo = user.todos.find(todo => todo.id === id)
+  if (!todo) return response.status(404).json({ error: 'Todo não encontrado!' })
+
+  request.todo = todo
+  request.user = user
+  next()
 }
 
 function findUserById(request, response, next) {
   // Complete aqui
+  const { id } = request.params
+
+  const validateId = validate(id)
+  if (!validateId) return response.status(400).json({ error: 'Id inválido!' })
+
+  const user = users.find(user => user.id === id)
+
+  if (!user) return response.status(404).json({ error: 'Usuário não encontrado!' })
+
+  request.user = user;
+  next()
 }
 
 app.post('/users', (request, response) => {
